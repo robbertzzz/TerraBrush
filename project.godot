@@ -11,9 +11,9 @@ config_version=5
 [application]
 
 config/name="TerraBrush"
-run/main_scene="res://Demo.tscn"
+run/main_scene="res://TerraBrush/terra_brush_runtime_test.tscn"
 config/features=PackedStringArray("4.2", "C#", "Forward Plus")
-config/icon="res://addons/terrabrush/icon.png"
+config/icon="res://TerraBrush/terrabrush/icon.png"
 
 [display]
 

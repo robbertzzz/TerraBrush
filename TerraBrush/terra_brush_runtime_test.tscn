@@ -1,0 +1,45 @@
+[gd_scene load_steps=5 format=3 uid="uid://buammchjgxp0v"]
+
+[ext_resource type="Script" path="res://TerraBrush/terrabrush/TerraBrush.cs" id="1_2mxra"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_a3dfb"]
+sky_top_color = Color(0.266667, 0.74902, 1, 1)
+sky_horizon_color = Color(0.443137, 0.764706, 1, 1)
+ground_bottom_color = Color(0.752941, 0.901961, 1, 1)
+ground_horizon_color = Color(0.486275, 0.737255, 1, 1)
+
+[sub_resource type="Sky" id="Sky_h6knk"]
+sky_material = SubResource("ProceduralSkyMaterial_a3dfb")
+
+[sub_resource type="Environment" id="Environment_0bq84"]
+background_mode = 2
+sky = SubResource("Sky_h6knk")
+tonemap_mode = 3
+ssr_enabled = true
+ssao_enabled = true
+ssil_enabled = true
+sdfgi_enabled = true
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.005
+
+[node name="TerraBrushRuntimeTest" type="Node3D"]
+
+[node name="TerraBrush" type="Node3D" parent="."]
+script = ExtResource("1_2mxra")
+metadata/_edit_lock_ = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_0bq84")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment"]
+transform = Transform3D(1, 0, 0, 0, 0.962299, 0.271995, 0, -0.271995, 0.962299, 0, 0, 0)
+shadow_enabled = true
+
+[node name="Debug" type="Label" parent="."]
+offset_left = 26.0
+offset_top = 16.0
+offset_right = 66.0
+offset_bottom = 39.0
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-0.670454, 0.424482, -0.608528, 0, 0.820173, 0.572116, 0.741951, 0.383577, -0.549889, -32.7249, 35.2808, -30.0505)

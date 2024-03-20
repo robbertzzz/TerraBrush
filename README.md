@@ -7,8 +7,8 @@
 
 <p align="center">
   <a href="https://godotengine.org/">
-    <img src="https://img.shields.io/badge/GODOT-%23000000.svg?style=for-the-badge&logo=godot-engine"
-         alt="Godot">
+	<img src="https://img.shields.io/badge/GODOT-%23000000.svg?style=for-the-badge&logo=godot-engine"
+		 alt="Godot">
   </a>
 </p>
 
@@ -64,15 +64,15 @@ I'm gonna be happy to accept PR for new features if it fits.
 * **Pie menu**
 * **Shortcuts**
   - The plugin has been made so it's really easy to use. A lot of shortcuts are available.
-    - LShift - Reverse the tool. Usually, this option will go from "Add" to "Remove". For the sculpting option, this does the "Smooth" option.
-    - V - Show the PieMenu for the current tool
-    - B - Show the PieMenu for the current brush
-    - N - Show the PieMenu for the current tool option (ex. While painting the textures, the PieMenu will show textures)
-    - G - Show a quick select for the brush size
-    - H - Show a quick select for the brush strength
-    - K - Toggle "Auto add zones"
-    - X - Lock on X axis
-    - Z - Lock on Z axis
+	- LShift - Reverse the tool. Usually, this option will go from "Add" to "Remove". For the sculpting option, this does the "Smooth" option.
+	- V - Show the PieMenu for the current tool
+	- B - Show the PieMenu for the current brush
+	- N - Show the PieMenu for the current tool option (ex. While painting the textures, the PieMenu will show textures)
+	- G - Show a quick select for the brush size
+	- H - Show a quick select for the brush strength
+	- K - Toggle "Auto add zones"
+	- X - Lock on X axis
+	- Z - Lock on Z axis
   - Shortcuts can be Re-Assigned.  To Access them, Goto '**Project->Tools->TerraBrush Key bindings**' to access the keymap, and ability to re-assign keys. - Implemented by @eumario
 * **Settings** - Some settings are available in the "ProjectSettings->TerraBrush" (ex. The decal color)
 * **LOD** - The terrain is created using a custom clipmap mesh so less vertices are needed. https://youtu.be/BardvKC0HF0
