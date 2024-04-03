@@ -15,6 +15,9 @@ public partial class BrushDecal : Node3D {
 	}
 
 	public void SetBrushImage(Image image) {
+		if(image == null) {
+			image = ResourceLoader.Load<Texture2D>("res://TerraBrush/terrabrush/Assets/Brushes/circle_gradient.png").GetImage();
+		}
 		var imageCopy = new Image();
 		imageCopy.CopyFrom(image);
 		imageCopy.FlipY();

@@ -102,7 +102,7 @@ public partial class Water : Node3D {
 
 		if (CustomShader == null) {
 			_clipmap.Shader = new ShaderMaterial() {
-				Shader = ResourceLoader.Load<Shader>("res://addons/terrabrush/Resources/Shaders/water_clipmap_shader.gdshader")
+				Shader = ResourceLoader.Load<Shader>("res://TerraBrush/terrabrush/Resources/Shaders/water_clipmap_shader.gdshader")
 			};
 		} else {
 			_clipmap.Shader = CustomShader;

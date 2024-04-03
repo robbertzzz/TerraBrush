@@ -24,8 +24,9 @@ volumetric_fog_density = 0.005
 
 [node name="TerraBrushRuntimeTest" type="Node3D"]
 
-[node name="TerraBrush" type="Node3D" parent="."]
+[node name="TerraBrush" type="Node3D" parent="." node_paths=PackedStringArray("UIParent")]
 script = ExtResource("1_2mxra")
+UIParent = NodePath("../UI")
 metadata/_edit_lock_ = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -43,3 +44,18 @@ offset_bottom = 39.0
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(-0.670454, 0.424482, -0.608528, 0, 0.820173, 0.572116, 0.741951, 0.383577, -0.549889, -32.7249, 35.2808, -30.0505)
+current = true
+
+[node name="UI" type="TabContainer" parent="."]
+custom_minimum_size = Vector2(1152, 256)
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -576.0
+offset_top = -256.0
+offset_right = 576.0
+grow_horizontal = 2
+grow_vertical = 0
+size_flags_vertical = 8

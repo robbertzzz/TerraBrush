@@ -38,7 +38,7 @@ public partial class WaterResource : Resource {
 			_customShader = value;
 
 			if (value != null && value.Shader == null) {
-				var defaultShader = ResourceLoader.Load<Shader>("res://addons/terrabrush/Resources/Shaders/water_clipmap_shader.gdshader");
+				var defaultShader = ResourceLoader.Load<Shader>("res://TerraBrush/terrabrush/Resources/Shaders/water_clipmap_shader.gdshader");
 				var defaultCode = defaultShader.Code;
 
 				var shader = new Shader {

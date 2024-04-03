@@ -95,49 +95,49 @@ public partial class KeybindManager : RefCounted {
 	/// <summary>
 	/// Load Keybinds from Godot Editor's EditorSettings File, for association with the InputMap.Actions.
 	/// </summary>
-	public void LoadEditorSettings() {
-		var settings = EditorInterface.Singleton.GetEditorSettings();
-		var im = InputMap.Singleton;
-		var shortcuts = settings.GetSetting("shortcuts").AsGodotArray<Godot.Collections.Dictionary>();
-		foreach (var action in ActionNames) {
-			var binding = $"{SettingsGroup}/{action}";
-			var keyEvents = shortcuts.FirstOrDefault(x => x["name"].AsString() == binding);
-			if (keyEvents != null) {
-				// Register Saved event in EditorSettings.
-				var keys = keyEvents["shortcuts"].AsGodotArray<InputEventKey>();
-				foreach (var key in keys) {
-					im.ActionAddEvent(action, key);
-				}
-			} else {
-				// Register Default Event
-				im.ActionAddEvent(action, DefaultKeys[action]);
-			}
-		}
-	}
+	//public void LoadEditorSettings() {
+	//	var settings = EditorInterface.Singleton.GetEditorSettings();
+	//	var im = InputMap.Singleton;
+	//	var shortcuts = settings.GetSetting("shortcuts").AsGodotArray<Godot.Collections.Dictionary>();
+	//	foreach (var action in ActionNames) {
+	//		var binding = $"{SettingsGroup}/{action}";
+	//		var keyEvents = shortcuts.FirstOrDefault(x => x["name"].AsString() == binding);
+	//		if (keyEvents != null) {
+	//			// Register Saved event in EditorSettings.
+	//			var keys = keyEvents["shortcuts"].AsGodotArray<InputEventKey>();
+	//			foreach (var key in keys) {
+	//				im.ActionAddEvent(action, key);
+	//			}
+	//		} else {
+	//			// Register Default Event
+	//			im.ActionAddEvent(action, DefaultKeys[action]);
+	//		}
+	//	}
+	//}
 
 	/// <summary>
 	/// Saves the Keybinds to Godot Editor's EditorSettings file, for associated InputMap.Actions.
 	/// </summary>
-	public void SaveEditorSettings() {
-		var im = InputMap.Singleton;
-		var settings = EditorInterface.Singleton.GetEditorSettings();
-		var shortcuts = settings.GetSetting("shortcuts").AsGodotArray<Godot.Collections.Dictionary>();
-		foreach (var action in ActionNames) {
-			var binding = $"{SettingsGroup}/{action}";
-			var keyEvents = shortcuts.FirstOrDefault(x => x["name"].AsString() == binding);
-			if (keyEvents == null) {
-				var keybind = new Godot.Collections.Dictionary<string, Variant>();
-				keybind["name"] = binding;
-				keybind["shortcuts"] = im.ActionGetEvents(action);
-				shortcuts.Add((Godot.Collections.Dictionary)keybind);
-			}
-			else {
-				keyEvents["shortcuts"] = im.ActionGetEvents(action);
-			}
-		}
+	//public void SaveEditorSettings() {
+	//	var im = InputMap.Singleton;
+	//	var settings = EditorInterface.Singleton.GetEditorSettings();
+	//	var shortcuts = settings.GetSetting("shortcuts").AsGodotArray<Godot.Collections.Dictionary>();
+	//	foreach (var action in ActionNames) {
+	//		var binding = $"{SettingsGroup}/{action}";
+	//		var keyEvents = shortcuts.FirstOrDefault(x => x["name"].AsString() == binding);
+	//		if (keyEvents == null) {
+	//			var keybind = new Godot.Collections.Dictionary<string, Variant>();
+	//			keybind["name"] = binding;
+	//			keybind["shortcuts"] = im.ActionGetEvents(action);
+	//			shortcuts.Add((Godot.Collections.Dictionary)keybind);
+	//		}
+	//		else {
+	//			keyEvents["shortcuts"] = im.ActionGetEvents(action);
+	//		}
+	//	}
 
-		settings.SetSetting("shortcuts", shortcuts);
-	}
+	//	settings.SetSetting("shortcuts", shortcuts);
+	//}
 
 	public void UpdateKeybind(StringName action, InputEventKey key) {
 		var im = InputMap.Singleton;

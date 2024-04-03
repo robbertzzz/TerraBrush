@@ -145,25 +145,40 @@ public partial class TerraBrush : TerraBrushTool {
 	public ImageTexture SnowTexture { get;set; }
 	#endregion
 
+	[ExportGroup("Runtime variables")]
+
+	[Export()]
+	public Control UIParent { get; set; }
+
 	public async override void _Ready() {
 		base._Ready();
+
+		if(Plugin.Instance == null) {
+			Plugin plugin = new();
+			AddChild(plugin);
+		}
 
 		if (Engine.IsEditorHint()) {
 			CompatibilityScript_0_3_Alpha.Convert(this);
 		}
 
 		_defaultNoise = ResourceLoader.Load<Texture2D>(_rootPath + "Resources/DefaultNoise.tres");
-
 		if (string.IsNullOrEmpty(DataPath)) {
-			var scenePath = GetTree().EditedSceneRoot.SceneFilePath;
-			if (!string.IsNullOrWhiteSpace(scenePath)) {
-				DataPath = scenePath.Replace(System.IO.Path.GetFileName(scenePath), GetTree().EditedSceneRoot.Name);
-			}
+			DataPath = "user://test/";
+			GD.Print("No data path was set, defaulting to user://test/");
 		}
 
 		if (TerrainZones != null) {
 			await LoadTerrain();
+		} else {
+			GD.Print("TerrainZones == null, creating new terrain");
+
+			OnCreateTerrain();
+
+			await LoadTerrain();
 		}
+		
+		Plugin.Instance._Edit(this);
 	}
 
 	public override string[] _GetConfigurationWarnings() {
@@ -232,6 +247,7 @@ public partial class TerraBrush : TerraBrushTool {
 
 	private async Task LoadTerrain() {
 		if (TerrainZones == null) {
+			GD.Print("TerrainZones == null");
 			return;
 		}
 

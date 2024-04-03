@@ -6,7 +6,22 @@ using System.Linq;
 
 namespace TerraBrush;
 
-public partial class Plugin : EditorPlugin {
+public partial class Plugin : Node3D {
+	private static Plugin instance;
+	public static Plugin Instance {
+		get => instance;
+	}
+
+	private UndoRedo _undoRedo;
+	private UndoRedo undoRedo {
+		get {
+			if(_undoRedo == null) {
+				_undoRedo = new UndoRedo();
+			}
+			return _undoRedo;
+		}
+	}
+
 	private const float UpdateDelay = 0.005f;
 	private const int ToolInfoOffset = 20;
 
@@ -20,13 +35,12 @@ public partial class Plugin : EditorPlugin {
 	private bool _isMousePressed;
 	private Vector3 _mouseHitPosition;
 	private float _updateTime = 0;
-	private EditorUndoRedoManager _undoRedo;
+	//private EditorUndoRedoManager _undoRedo;
 	private bool _preventInitialDo = false;
-	private Node _editorViewportsContainer = null;
-	private Control[] _editorViewports = null;
 	private Control _overlaySelector = null;
 	private Button _updateTerrainSettingsButton = null;
 	private CheckBox _autoAddZonesCheckbox = null;
+	private Control _uiParent;
 
 	private void CreateCustomSetting(string name, Variant defaultValue, Variant.Type type, PropertyHint hint = PropertyHint.None, string hintString = null) {
 		if (ProjectSettings.HasSetting(name)) {
@@ -46,60 +60,119 @@ public partial class Plugin : EditorPlugin {
 	}
 
 	public override void _EnterTree() {
-		var keybindManager = new KeybindManager();
-		var script = GD.Load<Script>("res://addons/terrabrush/TerraBrush.cs");
-		var icon = GD.Load<Texture2D>("res://addons/terrabrush/icon.png");
+		instance = this;
 
-		AddCustomType("TerraBrush", "Node3D", script, icon);
+		var keybindManager = new KeybindManager();
+		var script = GD.Load<Script>("res://TerraBrush/terrabrush/TerraBrush.cs");
+		var icon = GD.Load<Texture2D>("res://TerraBrush/terrabrush/icon.png");
+
+		//AddCustomType("TerraBrush", "Node3D", script, icon);
 		CreateCustomSetting(SettingContants.DecalColor, Colors.Red, Variant.Type.Color);
 		CreateCustomSetting(SettingContants.CustomBrushesFolder, "res://TerraBrush_CustomBrushes", Variant.Type.String);
 		CreateCustomSetting(SettingContants.SculptingMultiplier, 10, Variant.Type.Int);
-		AddInspectorPlugin(new ButtonInspectorPlugin());
+		//AddInspectorPlugin(new ButtonInspectorPlugin());
 
-		_terrainControlDockPrefab = ResourceLoader.Load<PackedScene>("res://addons/terrabrush/Components/TerrainControlDock.tscn");
-		_toolsPieMenuPrefab = ResourceLoader.Load<PackedScene>("res://addons/terrabrush/Components/ToolsPieMenu.tscn");
-		_customContentPieMenuPrefab = ResourceLoader.Load<PackedScene>("res://addons/terrabrush/Components/CustomContentPieMenu.tscn");
-		_editorViewportsContainer = GetEditorViewportsContainer();
-		_editorViewports = _editorViewportsContainer.GetChildren().Select(viewport => (Control) viewport).ToArray();
+		_terrainControlDockPrefab = ResourceLoader.Load<PackedScene>("res://TerraBrush/terrabrush/Components/TerrainControlDock.tscn");
+		_toolsPieMenuPrefab = ResourceLoader.Load<PackedScene>("res://TerraBrush/terrabrush/Components/ToolsPieMenu.tscn");
+		_customContentPieMenuPrefab = ResourceLoader.Load<PackedScene>("res://TerraBrush/terrabrush/Components/CustomContentPieMenu.tscn");
 
 		keybindManager.RegisterInputMap();
-		keybindManager.LoadEditorSettings();
+		//keybindManager.LoadEditorSettings();
 		AddToolMenuItem("TerraBrush Key bindings", Callable.From(HandleKeyBindings));
 	}
 
+	private void AddInspectorPlugin(Control inspectorPlugin) {
+		GD.Print("Attempting to add an inspector plugin: ", inspectorPlugin);
+	}
+
+	private void RemoveInspectorPlugin(Control inspectorPlugin) { }
+
+	private void AddControlToDock(EditorPlugin.DockSlot slot, Control control) {
+		if(_uiParent == null) {
+			GD.PrintErr("UIParent isn't set!");
+			return;
+		}
+
+		GD.Print("Adding control to dock: ", control);
+		_uiParent.AddChild(control, true);
+	}
+
+	private void RemoveControlFromDocks(Control control) {
+		if(_uiParent == null) {
+			GD.PrintErr("UIParent isn't set!");
+			return;
+		}
+
+		if(control.GetParent() != _uiParent) {
+			GD.PrintErr("UIParent isn't the parent of this Control!");
+			control.GetParent().RemoveChild(control);
+			return;
+		}
+
+		_uiParent.RemoveChild(control);
+	}
+
+	private void AddControlToContainer(EditorPlugin.CustomControlContainer container, Control control) { // (EditorPlugin.CustomControlContainer, Control control)
+		if(_uiParent == null) {
+			GD.PrintErr("UIParent isn't set!");
+			return;
+		}
+
+		GD.Print("Adding control to container: ", control);
+		_uiParent.AddChild(control);
+	}
+
+	private void RemoveControlFromContainer(EditorPlugin.CustomControlContainer container, Control control) { // (EditorPlugin.CustomControlContainer, Control control)
+		control.GetParent().RemoveChild(control);
+	}
+
+	private void AddToolMenuItem(string buttonName, Callable callable) {
+		GD.Print("We should be adding a tool menu item here called ", buttonName);
+	}
+
+	private void RemoveToolMenuItem(string buttonName) {
+		GD.Print("We should be removing a tool menu item here called ", buttonName);
+	}
+
 	private void HandleKeyBindings() {
-		var dlg = ResourceLoader.Load<PackedScene>("res://addons/terrabrush/Components/KeybindSettings.tscn")
+		var dlg = ResourceLoader.Load<PackedScene>("res://TerraBrush/terrabrush/Components/KeybindSettings.tscn")
 			.Instantiate<KeybindSettings>();
 		dlg.Confirmed += () => dlg.QueueFree();
 		GetTree().Root.AddChild(dlg);
 		dlg.PopupCentered();
 	}
 
-	public override void _Edit(GodotObject @object) {
-		base._Edit(@object);
+	public void _Edit(GodotObject @object) {
+		//base._Edit(@object);
+
+		GD.Print("Trying to edit...");
 
 		if (_Handles(@object)) {
+			GD.Print("We can edit!");
 			OnEditTerrainNode((TerraBrush) @object);
 		} else {
+			GD.Print("Nope, that's the wrong object.");
 			OnExitEditTerrainNode();
 		}
 	}
 
-	public override bool _Handles(GodotObject @object) {
+	public bool _Handles(GodotObject @object) {
 		return @object is TerraBrush;
 	}
 
-	public override void _SaveExternalData() {
-		base._SaveExternalData();
+	public void _SaveExternalData() {
+		//base._SaveExternalData();
 
 		_currentTerraBrushNode?.SaveResources();
 	}
 
-	public override int _Forward3DGuiInput(Camera3D viewportCamera, InputEvent @event) {
+	public override void _UnhandledInput(InputEvent @event) {
+		Camera3D viewportCamera = GetViewport().GetCamera3D();
 		var preventGuiInput = false;
 
 		if (_toolInfo != null) {
-			_toolInfo.Position = viewportCamera.GetViewport().GetMousePosition() + viewportCamera.GetViewport().GetParent<SubViewportContainer>().GlobalPosition + new Vector2I(ToolInfoOffset, ToolInfoOffset);
+			//_toolInfo.Position = viewportCamera.GetViewport().GetMousePosition() + viewportCamera.GetViewport().GetParent<SubViewportContainer>().GlobalPosition + new Vector2I(ToolInfoOffset, ToolInfoOffset);
+			_toolInfo.Position = GetViewport().GetMousePosition() + new Vector2I(ToolInfoOffset, ToolInfoOffset);
 			_toolInfo.SetText(_currentTerraBrushNode?.CurrentTool?.GetToolInfo(_currentTerraBrushNode.TerrainTool));
 		}
 
@@ -118,11 +191,13 @@ public partial class Plugin : EditorPlugin {
 		if (@event is InputEventKey inputEvent) {
 			_terrainControlDock.SetShiftPressed(Input.IsKeyPressed(Key.Shift));
 
-			if (!inputEvent.Pressed || inputEvent.Echo) return base._Forward3DGuiInput(viewportCamera, @event);
+			if (!inputEvent.Pressed || inputEvent.Echo) return;
 
 			if (inputEvent.IsAction(KeybindManager.StringNames.ToolPie)) {
 				ShowToolPieMenu();
-				return (int) AfterGuiInput.Stop;
+				GetViewport().SetInputAsHandled();
+				return;
+				//return (int) AfterGuiInput.Stop;
 			}
 
 			if (inputEvent.IsAction(KeybindManager.StringNames.BrushPie)) {
@@ -132,39 +207,49 @@ public partial class Plugin : EditorPlugin {
 						HideOverlaySelector();
 					});
 				});
-				return (int) AfterGuiInput.Stop;
+				GetViewport().SetInputAsHandled();
+				return;
+				//return (int) AfterGuiInput.Stop;
 			}
 
 			if (inputEvent.IsAction(KeybindManager.StringNames.ToolContentPie)) {
 				ShowCurrentToolCustomContentPieMenu();
-				return (int) AfterGuiInput.Stop;
+				GetViewport().SetInputAsHandled();
+				return;
+				//return (int) AfterGuiInput.Stop;
 			}
 
 			if (inputEvent.IsAction(KeybindManager.StringNames.BrushSizeSelector)) {
 				ShowBrushNumericSelector(1, 200, Colors.LimeGreen, _currentTerraBrushNode.BrushSize, value => {
 					_terrainControlDock.SetBrushSize(value);
 				});
-
-				return (int) AfterGuiInput.Stop;
+				GetViewport().SetInputAsHandled();
+				return;
+				//return (int) AfterGuiInput.Stop;
 			}
 
 			if (inputEvent.IsAction(KeybindManager.StringNames.BrushStrengthSelector)) {
 				ShowBrushNumericSelector(1, 100, Colors.Crimson, (int) (_currentTerraBrushNode.BrushStrength * 100), value => {
 					_terrainControlDock.SetBrushStrength(value / 100.0f);
 				});
-
-				return (int) AfterGuiInput.Stop;
+				GetViewport().SetInputAsHandled();
+				return;
+				//return (int) AfterGuiInput.Stop;
 			}
 
 			if (inputEvent.IsAction(KeybindManager.StringNames.EscapeSelector) && _overlaySelector != null) {
 				HideOverlaySelector();
-				return (int) AfterGuiInput.Stop;
+				GetViewport().SetInputAsHandled();
+				return;
+				//return (int) AfterGuiInput.Stop;
 			}
 
 			if (inputEvent.IsAction(KeybindManager.StringNames.ToggleAutoAddZones)) {
 				_autoAddZonesCheckbox.ButtonPressed = !_autoAddZonesCheckbox.ButtonPressed;
 				UpdateAutoAddZonesSetting();
-				return (int) AfterGuiInput.Stop;
+				GetViewport().SetInputAsHandled();
+				return;
+				//return (int) AfterGuiInput.Stop;
 			}
 		}
 
@@ -175,7 +260,9 @@ public partial class Plugin : EditorPlugin {
 				}
 
 				HideOverlaySelector();
-				return (int) EditorPlugin.AfterGuiInput.Stop;
+				GetViewport().SetInputAsHandled();
+				return;
+				//return (int) EditorPlugin.AfterGuiInput.Stop;
 			}
 
 			if (inputButton.ButtonIndex == MouseButton.Left) {
@@ -200,8 +287,8 @@ public partial class Plugin : EditorPlugin {
 
 					_currentTerraBrushNode.EndEditTerrain();
 
-					_undoRedo.AddUndoMethod(this, nameof(OnUndoRedo));
-					_undoRedo.AddDoMethod(this, nameof(OnUndoRedo));
+					_undoRedo.AddUndoMethod(Callable.From(OnUndoRedo));
+					_undoRedo.AddDoMethod(Callable.From(OnUndoRedo));
 
 					_preventInitialDo = true;
 					_undoRedo.CommitAction();
@@ -213,13 +300,17 @@ public partial class Plugin : EditorPlugin {
 		_currentTerraBrushNode?.UpdateCameraPosition(viewportCamera);
 
 		if (preventGuiInput) {
-			return (int) EditorPlugin.AfterGuiInput.Stop;
+			GetViewport().SetInputAsHandled();
+			return;
+			//return (int) EditorPlugin.AfterGuiInput.Stop;
 		} else {
 			if ((_currentTerraBrushNode?.CurrentTool?.HandleInput(_currentTerraBrushNode.TerrainTool, @event)).GetValueOrDefault()) {
-				return (int) EditorPlugin.AfterGuiInput.Stop;
+				GetViewport().SetInputAsHandled();
+				return;
+				//return (int) EditorPlugin.AfterGuiInput.Stop;
 			}
 
-			return base._Forward3DGuiInput(viewportCamera, @event);
+			//return base._Forward3DGuiInput(viewportCamera, @event);
 		}
 	}
 
@@ -313,7 +404,7 @@ public partial class Plugin : EditorPlugin {
 	}
 
 	public override void _ExitTree() {
-		RemoveCustomType("TerraBrush");
+		//RemoveCustomType("TerraBrush");
 		RemoveToolMenuItem("TerraBrush Key bindings");
 
 		OnExitEditTerrainNode();
@@ -328,14 +419,14 @@ public partial class Plugin : EditorPlugin {
 		}
 
 		if (_updateTerrainSettingsButton != null) {
-			RemoveControlFromContainer(CustomControlContainer.SpatialEditorMenu, _updateTerrainSettingsButton);
+			RemoveControlFromContainer(EditorPlugin.CustomControlContainer.SpatialEditorMenu, _updateTerrainSettingsButton);
 			_updateTerrainSettingsButton.QueueFree();
 
 			_updateTerrainSettingsButton = null;
 		}
 
 		if (_autoAddZonesCheckbox != null) {
-			RemoveControlFromContainer(CustomControlContainer.SpatialEditorMenu, _autoAddZonesCheckbox);
+			RemoveControlFromContainer(EditorPlugin.CustomControlContainer.SpatialEditorMenu, _autoAddZonesCheckbox);
 			_autoAddZonesCheckbox.QueueFree();
 
 			_autoAddZonesCheckbox = null;
@@ -347,7 +438,9 @@ public partial class Plugin : EditorPlugin {
 		GetNodeOrNull("BrushDecal")?.QueueFree();
 		_brushDecal?.QueueFree();
 
-		_brushDecal = ResourceLoader.Load<PackedScene>("res://addons/terrabrush/Components/BrushDecal.tscn").Instantiate<BrushDecal>();
+		_uiParent = terraBrush.UIParent;
+
+		_brushDecal = ResourceLoader.Load<PackedScene>("res://TerraBrush/terrabrush/Components/BrushDecal.tscn").Instantiate<BrushDecal>();
 		_brushDecal.Name = "BrushDecal";
 		AddChild(_brushDecal);
 
@@ -359,13 +452,13 @@ public partial class Plugin : EditorPlugin {
 			RemoveDock();
 			AddDock();
 		};
-		_undoRedo = GetUndoRedo();
-		_currentTerraBrushNode.UndoRedo = _undoRedo;
+		//_undoRedo = GetUndoRedo();
+		_currentTerraBrushNode.UndoRedo = undoRedo;
 
 		GetNodeOrNull("ToolInfo")?.QueueFree();
 		_toolInfo?.QueueFree();
 
-		_toolInfo = ResourceLoader.Load<PackedScene>("res://addons/terrabrush/Components/ToolInfo.tscn").Instantiate<ToolInfo>();
+		_toolInfo = ResourceLoader.Load<PackedScene>("res://TerraBrush/terrabrush/Components/ToolInfo.tscn").Instantiate<ToolInfo>();
 		_toolInfo.Name = "ToolInfo";
 		AddChild(_toolInfo);
 
@@ -378,21 +471,21 @@ public partial class Plugin : EditorPlugin {
 		_terrainControlDock = _terrainControlDockPrefab.Instantiate<TerrainControlDock>();
 		_terrainControlDock.TerraBrush = _currentTerraBrushNode;
 		_terrainControlDock.BrushDecal = _brushDecal;
-		_terrainControlDock.EditorResourcePreview = EditorInterface.Singleton.GetResourcePreviewer();
-		AddControlToDock(DockSlot.RightBl, _terrainControlDock);
+		//_terrainControlDock.EditorResourcePreview = EditorInterface.Singleton.GetResourcePreviewer();
+		AddControlToDock(EditorPlugin.DockSlot.RightBl, _terrainControlDock);
 
 		_updateTerrainSettingsButton = new Button() {
 			Text = "Update terrain"
 		};
 		_updateTerrainSettingsButton.Connect("pressed", new Callable(this, nameof(UpdateTerrainSettings)));
-		AddControlToContainer(CustomControlContainer.SpatialEditorMenu, _updateTerrainSettingsButton);
+		AddControlToContainer(EditorPlugin.CustomControlContainer.SpatialEditorMenu, _updateTerrainSettingsButton);
 
 		_autoAddZonesCheckbox = new CheckBox() {
 			Text = "Auto add zones",
 			ButtonPressed = _currentTerraBrushNode.AutoAddZones
 		};
 		_autoAddZonesCheckbox.Connect("pressed", new Callable(this, nameof(UpdateAutoAddZonesSetting)));
-		AddControlToContainer(CustomControlContainer.SpatialEditorMenu, _autoAddZonesCheckbox);
+		AddControlToContainer(EditorPlugin.CustomControlContainer.SpatialEditorMenu, _autoAddZonesCheckbox);
 	}
 
 	private void OnExitEditTerrainNode() {
@@ -412,10 +505,6 @@ public partial class Plugin : EditorPlugin {
 		_currentTerraBrushNode = null;
 	}
 
-	private Node GetEditorViewportsContainer() {
-		return GetEditorViewportsContainerRecursive(EditorInterface.Singleton.GetBaseControl());
-	}
-
 	private Node GetEditorViewportsContainerRecursive(Node node) {
 		foreach (var child in node.GetChildren()) {
 			if (child.GetClass() == "Node3DEditorViewportContainer") {
@@ -431,12 +520,6 @@ public partial class Plugin : EditorPlugin {
 		return null;
 	}
 
-	private Node GetActiveViewport() {
-		return _editorViewports.FirstOrDefault(viewport => {
-			return viewport.GetRect().HasPoint(viewport.GetLocalMousePosition());
-		});
-	}
-
 	private void HideOverlaySelector() {
 		if (_overlaySelector != null) {
 			_overlaySelector.QueueFree();
@@ -447,7 +530,7 @@ public partial class Plugin : EditorPlugin {
 	private void ShowToolPieMenu() {
 		HideOverlaySelector();
 
-		var activeViewport = GetActiveViewport();
+		var activeViewport = GetViewport();
 		if (activeViewport != null) {
 			var pieMenu = _toolsPieMenuPrefab.Instantiate<ToolsPieMenu>();
 			pieMenu.OnToolSelected = toolType => {
@@ -458,7 +541,7 @@ public partial class Plugin : EditorPlugin {
 
 			_overlaySelector = pieMenu;
 
-			_overlaySelector.Position = ((Control) activeViewport).GetGlobalMousePosition();
+			_overlaySelector.Position = activeViewport.GetMousePosition();
 
 			EditorInterface.Singleton.GetBaseControl().AddChild(_overlaySelector);
 		}
@@ -467,12 +550,12 @@ public partial class Plugin : EditorPlugin {
 	private void ShowCustomContentPieMenu(string label, Action<CustomContentPieMenu> addItems) {
 		HideOverlaySelector();
 
-		var activeViewport = GetActiveViewport();
+		var activeViewport = GetViewport();
 		if (activeViewport != null) {
 			var customContentPieMenu = _customContentPieMenuPrefab.Instantiate<CustomContentPieMenu>();
 
 			_overlaySelector = customContentPieMenu;
-			_overlaySelector.Position = ((Control) activeViewport).GetGlobalMousePosition();
+			_overlaySelector.Position = activeViewport.GetMousePosition();
 
 			EditorInterface.Singleton.GetBaseControl().AddChild(_overlaySelector);
 
@@ -520,9 +603,9 @@ public partial class Plugin : EditorPlugin {
 	private void ShowBrushNumericSelector(int minVale, int maxValue, Color widgetColor, int initialValue, Action<int> onValueSelected) {
 		HideOverlaySelector();
 
-		var activeViewport = GetActiveViewport();
+		var activeViewport = GetViewport();
 		if (activeViewport != null) {
-			var selectorPrefab = ResourceLoader.Load<PackedScene>("res://addons/terrabrush/Components/BrushNumericSelector.tscn");
+			var selectorPrefab = ResourceLoader.Load<PackedScene>("res://TerraBrush/terrabrush/Components/BrushNumericSelector.tscn");
 			var selector = selectorPrefab.Instantiate<BrushNumericSelector>();
 
 			selector.MinValue = minVale;
@@ -530,7 +613,7 @@ public partial class Plugin : EditorPlugin {
 			selector.WidgetColor = widgetColor;
 
 			_overlaySelector = selector;
-			_overlaySelector.Position = ((Control) activeViewport).GetGlobalMousePosition();
+			_overlaySelector.Position = activeViewport.GetMousePosition();
 
 			EditorInterface.Singleton.GetBaseControl().AddChild(_overlaySelector);
 

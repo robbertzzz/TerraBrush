@@ -7,9 +7,9 @@ namespace TerraBrush;
 
 public static class CustomContentLoader {
 	public static void AddBrushesPreviewToParent(Node parentNode, Action<int> onSelect) {
-		var brushPreviewPrefab = ResourceLoader.Load<PackedScene>("res://addons/terrabrush/Components/BrushPreview.tscn");
+		var brushPreviewPrefab = ResourceLoader.Load<PackedScene>("res://TerraBrush/terrabrush/Components/BrushPreview.tscn");
 
-		var directories = new List<DirAccess>() {DirAccess.Open("res://addons/terrabrush/Assets/Brushes/")};
+		var directories = new List<DirAccess>() {DirAccess.Open("res://TerraBrush/terrabrush/Assets/Brushes/") };
 
 		var customBrushesDirectory = (string) ProjectSettings.GetSetting(SettingContants.CustomBrushesFolder);
 		if (!string.IsNullOrWhiteSpace(customBrushesDirectory) && DirAccess.DirExistsAbsolute(customBrushesDirectory)) {
@@ -39,7 +39,7 @@ public static class CustomContentLoader {
 
 	public static void AddTexturesPreviewToParent(TerraBrush terraBrush, Node parentNode, Action<int> onSelect) {
 		if (terraBrush.TextureSets?.TextureSets != null) {
-			var texturePreviewPrefab = ResourceLoader.Load<PackedScene>("res://addons/terrabrush/Components/TexturePreview.tscn");
+			var texturePreviewPrefab = ResourceLoader.Load<PackedScene>("res://TerraBrush/terrabrush/Components/TexturePreview.tscn");
 
 			for (var i = 0; i < terraBrush.TextureSets.TextureSets.Length; i++) {
 				var textureSet = terraBrush.TextureSets.TextureSets[i];
@@ -59,7 +59,7 @@ public static class CustomContentLoader {
 
 	public static void AddFoliagesPreviewToParent(TerraBrush terraBrush, Node parentNode, Action<int> onSelect) {
 		if (terraBrush.Foliages != null) {
-			var foliagePreviewPrefab = ResourceLoader.Load<PackedScene>("res://addons/terrabrush/Components/FoliagePreview.tscn");
+			var foliagePreviewPrefab = ResourceLoader.Load<PackedScene>("res://TerraBrush/terrabrush/Components/FoliagePreview.tscn");
 
 			for (var i = 0; i < terraBrush.Foliages.Length; i++) {
 				var foliage = terraBrush.Foliages[i];
@@ -80,7 +80,7 @@ public static class CustomContentLoader {
 
 	public static void AddObjectsPreviewToParent(TerraBrush terraBrush, Node parentNode, Action<int> onSelect) {
 		if (terraBrush.Objects != null) {
-			var objectPreviewPrefab = ResourceLoader.Load<PackedScene>("res://addons/terrabrush/Components/ObjectPreview.tscn");
+			var objectPreviewPrefab = ResourceLoader.Load<PackedScene>("res://TerraBrush/terrabrush/Components/ObjectPreview.tscn");
 
 			for (var i = 0; i < terraBrush.Objects.Length; i++) {
 				var objectItem = terraBrush.Objects[i];
