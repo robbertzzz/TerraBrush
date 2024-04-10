@@ -1,6 +1,24 @@
-[gd_scene load_steps=5 format=3 uid="uid://buammchjgxp0v"]
+[gd_scene load_steps=13 format=3 uid="uid://buammchjgxp0v"]
 
 [ext_resource type="Script" path="res://TerraBrush/terrabrush/TerraBrush.cs" id="1_2mxra"]
+[ext_resource type="Texture2D" uid="uid://dfcyx4fhnyqmp" path="res://TerraBrush/Assets/cc0_textures/dirt_ground_0013_1k_zW2rzw/ground_0013_color_1k.jpg" id="2_f5fw1"]
+[ext_resource type="Texture2D" uid="uid://dtmmmald6xw7v" path="res://TerraBrush/Assets/cc0_textures/dirt_ground_0013_1k_zW2rzw/ground_0013_height_1k.png" id="3_rucxg"]
+[ext_resource type="Texture2D" uid="uid://hosywlyneaqc" path="res://TerraBrush/Assets/cc0_textures/dirt_ground_0013_1k_zW2rzw/ground_0013_normal_opengl_1k.png" id="4_tf6il"]
+[ext_resource type="Texture2D" uid="uid://6xypy41ao85" path="res://TerraBrush/Assets/cc0_textures/dirt_ground_0013_1k_zW2rzw/ground_0013_roughness_1k.jpg" id="5_imeus"]
+[ext_resource type="Script" path="res://TerraBrush/terrabrush/Scripts/EditorResources/TextureSetResource.cs" id="6_rnsv3"]
+[ext_resource type="Script" path="res://TerraBrush/terrabrush/Scripts/EditorResources/TextureSetsResource.cs" id="7_bpc4l"]
+
+[sub_resource type="Resource" id="Resource_wwwp2"]
+script = ExtResource("6_rnsv3")
+Name = "Dirt"
+AlbedoTexture = ExtResource("2_f5fw1")
+NormalTexture = ExtResource("4_tf6il")
+RoughnessTexture = ExtResource("5_imeus")
+HeightTexture = ExtResource("3_rucxg")
+
+[sub_resource type="Resource" id="Resource_dyjyb"]
+script = ExtResource("7_bpc4l")
+TextureSets = [SubResource("Resource_wwwp2")]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_a3dfb"]
 sky_top_color = Color(0.266667, 0.74902, 1, 1)
@@ -26,6 +44,7 @@ volumetric_fog_density = 0.005
 
 [node name="TerraBrush" type="Node3D" parent="." node_paths=PackedStringArray("UIParent")]
 script = ExtResource("1_2mxra")
+TextureSets = SubResource("Resource_dyjyb")
 UIParent = NodePath("../UI")
 metadata/_edit_lock_ = true
 

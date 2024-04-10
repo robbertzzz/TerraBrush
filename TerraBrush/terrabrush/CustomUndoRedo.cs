@@ -50,6 +50,8 @@ public partial class CustomUndoRedo : RefCounted
 			return;
 		}
 
+		GD.Print(currentAction.actionName);
+
 		undoStack.Add(currentAction);
 
 		if(execute) {
