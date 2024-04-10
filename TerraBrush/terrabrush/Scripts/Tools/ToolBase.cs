@@ -59,6 +59,7 @@ public abstract class ToolBase {
 	}
 
 	public virtual void BeginPaint() {
+		GD.Print("Begin paint");
 		_imagesCache = new();
 		_zonesPositionCache = new();
 		_modifiedUndoTextures = new();
@@ -67,6 +68,7 @@ public abstract class ToolBase {
 	public abstract void Paint(TerrainToolType toolType, Image brushImage, int brushSize, float brushStrength, Vector2 imagePosition);
 
 	public virtual void EndPaint() {
+		GD.Print("End paint");
 		_imagesCache = null;
 		_zonesPositionCache = null;
 
@@ -159,12 +161,17 @@ public abstract class ToolBase {
 		return null;
 	}
 
+	public void UpdateTexture(ImageTexture texture, Image image) {
+		texture.Update(image);
+	}
+
 	protected void AddTextureToUndo(ImageTexture texture) {
 		if (!_modifiedUndoTextures.Contains(texture)) {
 			_modifiedUndoTextures.Add(texture);
 
 			_terraBrush.UndoRedo.AddUndoReference(texture);
-			_terraBrush.UndoRedo.AddUndoMethod(Callable.From(() => texture.Update(GetUndoRedoImageFromTexture(texture))));
+			Image image = GetUndoRedoImageFromTexture(texture);
+			_terraBrush.UndoRedo.AddUndoMethod(Callable.From(() => texture.Update(image)));
 			//_terraBrush.UndoRedo.AddUndoMethod(texture, "update", GetUndoRedoImageFromTexture(texture));
 		}
 	}
@@ -172,7 +179,8 @@ public abstract class ToolBase {
 	private void AddImagesToRedo() {
 		foreach (var imageTexture in _modifiedUndoTextures) {
 			_terraBrush.UndoRedo.AddDoReference(imageTexture);
-			_terraBrush.UndoRedo.AddDoMethod(Callable.From(() => imageTexture.Update(GetUndoRedoImageFromTexture(imageTexture))));
+			Image image = GetUndoRedoImageFromTexture(imageTexture);
+			_terraBrush.UndoRedo.AddDoMethod(Callable.From(() => imageTexture.Update(image)));
 			//_terraBrush.UndoRedo.AddDoMethod(imageTexture, "update", GetUndoRedoImageFromTexture(imageTexture));
 		}
 	}

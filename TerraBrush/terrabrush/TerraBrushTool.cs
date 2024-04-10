@@ -37,7 +37,7 @@ public partial class TerraBrushTool : Node3D {
 
 	public TerrainToolType TerrainTool => _terrainTool;
 	public ToolBase CurrentTool => _currentTool;
-	public UndoRedo UndoRedo { get;set; }
+	public CustomUndoRedo UndoRedo { get;set; }
 
 	public int BrushSize => _brushSize;
 	public float BrushStrength => _brushStrength;

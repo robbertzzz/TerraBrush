@@ -12,11 +12,11 @@ public partial class Plugin : Node3D {
 		get => instance;
 	}
 
-	private UndoRedo _undoRedo;
-	private UndoRedo undoRedo {
+	private CustomUndoRedo _undoRedo;
+	private CustomUndoRedo undoRedo {
 		get {
 			if(_undoRedo == null) {
-				_undoRedo = new UndoRedo();
+				_undoRedo = new CustomUndoRedo();
 			}
 			return _undoRedo;
 		}
@@ -351,29 +351,25 @@ public partial class Plugin : Node3D {
 	}
 
 	private Vector3 GetRayCastWithTerrain(Camera3D editorCamera) {
-		var spaceState = _currentTerraBrushNode.GetWorld3D().DirectSpaceState;
+		var spaceState = editorCamera.GetWorld3D().DirectSpaceState;
 
-		if (editorCamera.GetViewport() is SubViewport viewport && viewport.GetParent() is SubViewportContainer viewportContainer) {
-			var screenPosition = editorCamera.GetViewport().GetMousePosition();
+		var screenPosition = editorCamera.GetViewport().GetMousePosition();
 
-			var from = editorCamera.ProjectRayOrigin(screenPosition);
-			var dir = editorCamera.ProjectRayNormal(screenPosition);
+		var from = editorCamera.ProjectRayOrigin(screenPosition);
+		var dir = editorCamera.ProjectRayNormal(screenPosition);
 
-			var distance = 2000;
-			var query = new PhysicsRayQueryParameters3D() {
-				From = from,
-				To = from + dir * distance
-			};
-			var result = spaceState.IntersectRay(query);
+		var distance = 2000;
+		var query = new PhysicsRayQueryParameters3D() {
+			From = from,
+			To = from + dir * distance
+		};
+		var result = spaceState.IntersectRay(query);
 
-			if (result?.Count > 0 && result["collider"].Obj == _currentTerraBrushNode.Terrain?.TerrainCollider) {
-				return (Vector3)result["position"] + new Vector3(0, 0.1f, 0);
-			} else {
-				return GetMouseClickToZoneHeight(from, dir);
-			}
+		if (result?.Count > 0 && result["collider"].Obj == _currentTerraBrushNode.Terrain?.TerrainCollider) {
+			return (Vector3)result["position"] + new Vector3(0, 0.1f, 0);
+		} else {
+			return GetMouseClickToZoneHeight(from, dir);
 		}
-
-		return Vector3.Inf;
 	}
 
 	private Vector3 GetMouseClickToZoneHeight(Vector3 from, Vector3 direction) {

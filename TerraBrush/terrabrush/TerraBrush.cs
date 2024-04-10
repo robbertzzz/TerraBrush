@@ -773,4 +773,8 @@ public partial class TerraBrush : TerraBrushTool {
 	{
 		return base._GetPropertyList();
 	}
+
+	public void UpdateTexture(ImageTexture texture, Image image) {
+		texture.Update(image);
+	}
 }
